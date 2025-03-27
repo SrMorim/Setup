@@ -1,0 +1,67 @@
+#cloud-config
+autoinstall:
+    version: 1
+    identity:
+        realname: 'morim'
+        hostname: workstation
+        username: morim
+        password: '$5$GMZCIEioVuDIAnrh$9fGMup4gB/XbDo/LpQQk9m2U3in1YE.PwK4MV6khe..'
+    locale: pt_BR.utf8
+    keyboard:
+        layout: br
+    timezone: "America/Sao_Paulo"   
+    packages:
+        - libreoffice
+        - gimp
+        - git
+        - wget
+        - curl
+        - build-essential
+        - default-jdk
+        - virtualbox
+        - gnome-tweaks
+        - software-properties-common
+    snaps:
+        - name: spotify
+          channel: stable
+          classic: false
+    
+    late-commands:
+        # Root of MySQL
+        - echo "mysql-server mysql-server/root_password password senha_mysql_aqui" | chroot /target debconf-set-selections
+        - echo "mysql-server mysql-server/root_password_again password senha_mysql_aqui" | chroot /target debconf-set-selections
+        - chroot /target apt install -y mysql-server
+
+        # VS Code
+        - curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /target/etc/apt/trusted.gpg.d/microsoft.gpg
+        - echo "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" > /target/etc/apt/sources.list.d/vscode.list
+
+        # Google Chrome
+        - curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /target/etc/apt/trusted.gpg.d/google-chrome.gpg
+        - echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /target/etc/apt/sources.list.d/google-chrome.list
+
+        # 1Password
+        - curl -sS https://downloads.1password.com/linux/keys/1password.asc | gpg --dearmor -o /target/etc/apt/trusted.gpg.d/1password.gpg
+        - echo "deb [arch=amd64] https://downloads.1password.com/linux/debian/amd64 stable main" > /target/etc/apt/sources.list.d/1password.list
+
+        # Atualizar repositórios e instalar apps
+        - chroot /target apt update
+        - chroot /target apt install -y code google-chrome-stable 1password
+
+        # IntelliJ IDEA Ultimate
+        - mkdir -p /target/opt/intellij
+        - wget -O /target/tmp/intellij.tar.gz https://download.jetbrains.com/idea/ideaIU-2024.1.tar.gz
+        - tar -xzf /target/tmp/intellij.tar.gz -C /target/opt/intellij --strip-components=1
+        - ln -s /opt/intellij/bin/idea.sh /target/usr/local/bin/intellij-ultimate
+        - echo -e "[Desktop Entry]\nType=Application\nName=IntelliJ IDEA Ultimate\nExec=/opt/intellij/bin/idea.sh\nIcon=/opt/intellij/bin/idea.png\nTerminal=false\nCategories=Development;" > /target/usr/share/applications/intellij-ultimate.desktop
+
+        # Astah UML Community
+        - wget -O /target/tmp/astah.deb https://cdn.change-vision.com/files/astah-community-9.0.0.deb
+        - chroot /target apt install -y /tmp/astah.deb
+
+    codecs:
+        install: true
+    drivers:
+        install: true
+    updates: all
+    shutdown: reboot
