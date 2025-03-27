@@ -28,8 +28,8 @@ autoinstall:
     
     late-commands:
         # Root of MySQL
-        - echo "mysql-server mysql-server/root_password password senha_mysql_aqui" | chroot /target debconf-set-selections
-        - echo "mysql-server mysql-server/root_password_again password senha_mysql_aqui" | chroot /target debconf-set-selections
+        - echo "mysql-server mysql-server/root_password password root" | chroot /target debconf-set-selections
+        - echo "mysql-server mysql-server/root_password_again password root" | chroot /target debconf-set-selections
         - chroot /target apt install -y mysql-server
 
         # VS Code
@@ -58,6 +58,13 @@ autoinstall:
         # Astah UML Community
         - wget -O /target/tmp/astah.deb https://cdn.change-vision.com/files/astah-community-9.0.0.deb
         - chroot /target apt install -y /tmp/astah.deb
+
+        - gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings \
+         "[\"/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/\"]"
+
+        - gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ name "'Abrir nova janela Home'"
+        - gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ command "'nautilus --new-window $HOME'"
+        - gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ binding "'<Super>e'"
 
     codecs:
         install: true
